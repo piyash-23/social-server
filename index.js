@@ -27,11 +27,18 @@ const run = async () => {
     const eventsDB = client.db("eventsDB");
     const eventColl = eventsDB.collection("events");
     await eventColl.createIndex({ date: 1 }, { expireAfterSeconds: 0 });
+    const userColl = eventsDB.collection("users");
 
     app.get("/events", async (req, res) => {
       const cursor = eventColl.find();
       const resul = await cursor.toArray();
       res.send(resul);
+    });
+    app.get("/events/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await eventColl.findOne(query);
+      res.send(result);
     });
 
     // event post
@@ -75,6 +82,15 @@ const run = async () => {
       };
       const result = await eventColl.updateOne(query, update);
       res.send(result);
+    });
+
+    // firebase users
+
+    app.post("/users", async (req, res) => {
+      const { email, password, photoURL } = req.body;
+      if (!email || !password || !photoURL) {
+        res.send();
+      }
     });
   } finally {
   }
